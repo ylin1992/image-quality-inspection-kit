@@ -4,12 +4,7 @@ import abc
 class Filter(abc.ABC):
     @abc.abstractmethod
     def __init__(self, **kwargs):
-        self.__filt = None
-        if 'type' in kwargs:
-            if kwargs['type'] == 'bp' and 'cutoff' not in kwargs:
-                raise ValueError("Please check your input: cutoff freq is essential for bp filter")
-            if kwargs['type'] != 'bp' and kwargs['type'] != 'lp' and kwargs['type'] != 'hp':
-                raise ValueError("Please check your input type, bp, lp or hp")
+        pass
     
     @abc.abstractmethod
     def get_filt(self):
@@ -31,5 +26,19 @@ class Filter(abc.ABC):
     def apply(self, image):
         return NotImplemented
 
+    @abc.abstractmethod
+    def set_shape(self, shape):
+        return NotImplemented
     
+    @abc.abstractmethod
+    def get_shape(self):
+        return NotImplemented
+    
+    @abc.abstractmethod
+    def set_frequency_para(self, para):
+        return NotImplemented
+    
+    @abc.abstractmethod
+    def get_frequency_para(self):
+        return NotImplemented
     

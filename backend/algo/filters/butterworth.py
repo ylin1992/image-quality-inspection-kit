@@ -2,30 +2,31 @@ from .filters import Filter
 import numpy as np
 class ButterworthFilter(Filter):
     
-    def __init__(self, shape, cutin, **kwargs):
-        super().__init__(**kwargs)
-        if kwargs['type'] == 'bp':
-            self.__filt = self.band_pass(shape, cutin, kwargs['cutoff'])
-        elif kwargs['type'] == 'lp':
-            self.__filt = self.low_pass(shape, cutin)
+    def __init__(self, shape, cutin=None, cutoff=None, type='bp'):
+        if type == 'bp' and (cutin is None and cutoff is None):
+            raise ValueError("Bandpass filter needs both cutin and cutoff")
+        if type == 'lp' or type == 'hp':
+            if cutin is None:
+                raise ValueError("Specify cutin for lowpass and high pass filter")
+        self.set_frequency_para(cutin, cutoff)
+        self.set_shape(shape)
+        self.gen_filt(type)
+                
+    def gen_filt(self, type):
+        if type == 'bp':
+            self.__filt = self.band_pass(self.__shape, self.__cutin, self.__cutoff)
+        elif type == 'lp':
+            self.__filt = self.low_pass(self.__shape, self.__cutin)
+        elif type == 'hp':
+            self.__filt = self.high_pass(self.__shape, self.__cutin)
         else:
-            self.__filt = self.high_pass(shape, cutin)
-    
-    def get_filt(self):
-        return self.__filt
-    
+            raise ValueError("Invalid type: " + type)
     def low_pass(self, shape, cutoff, x_as=1, y_as=1):
         cutoff += 1e-6
         rows, cols = shape
         x = np.linspace(-0.5, 0.5, cols)
         y = np.linspace(-0.5, 0.5, rows)
-        # alpha = np.deg2rad(60)
-        # x_rot = x * np.sin(alpha) - y * np.cos(-alpha)
-        # y_rot = x * np.sin(-alpha) + y * np.cos(alpha)
         radius = np.sqrt(((x * x_as) ** 2)[np.newaxis] + ((y * y_as) ** 2)[:, np.newaxis])
-        # c, s = np.cos(-alpha), np.sin(-alpha)
-        # R = np.array(((c, -s), (s, c)))
-        # radius = np.dot()
         filt = 1 / (1.0 + (radius / cutoff) ** (2))
         return filt
     
@@ -44,6 +45,39 @@ class ButterworthFilter(Filter):
         else:
             print("Initialize the filter first")
             return None
+        
+    def get_filt(self):
+        return self.__filt    
+        
+    def set_shape(self, shape):
+        if shape is None or len(shape) != 2 or type(shape) is not tuple:
+            raise ValueError("Invalid shape")
+        self.__shape = shape
+    
+    def get_shape(self, shape):
+        if shape is None or len(shape) != 2:
+            raise ValueError("Shape is invalid")
+        self.__shape = shape
+        
+    def set_frequency_para(self, cutin, cutoff):
+        if cutin is not None:
+            if cutin is None and type(cutin) is not int and type(cutin) is not float:
+                raise ValueError("cutin is invalid")
+            self.__cutin = cutin
+
+        if cutoff is not None:
+            if cutoff is None and type(cutoff) is not int and type(cutoff) is not float:
+                raise ValueError("cutin is invalid")
+            self.__cutoff = cutoff
+        
+    def get_frequency_para(self):
+        return {
+            'cutin': self.__cutin,
+            'cutoff': self.__cutoff
+        }
+    
+
+    
 def butter2d_lp(shape, f, n):
     rows, cols = shape
     x = np.linspace(-0.5, 0.5, cols) * cols

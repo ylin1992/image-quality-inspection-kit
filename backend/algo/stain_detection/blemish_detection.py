@@ -127,20 +127,27 @@ class BlemishDetection(StainDetection):
                     para['image'] = kwargs['image']
                 else:
                     raise ValueError("Image is None")
-            elif k == 'cutin':
-                if type(kwargs['cutin']) is int or type(kwargs['cutin']) is float:
-                    para['cutin'] = kwargs['cutin']
+            elif k == 'roi_w':
+                if type(kwargs['roi_w']) is int or type(kwargs['roi_w']) is float:
+                    para['roi_w'] = kwargs['roi_w']
                 else:
-                    raise TypeError('cutin is not float or int')
-            elif k == 'cutoff':
-                if type(kwargs['cutoff']) is int or type(kwargs['cutoff']) is float:
-                    para['cutoff'] = kwargs['cutoff'] 
+                    raise TypeError('roi_w is not float or int')
+            elif k == 'ratio':
+                if type(kwargs['ratio']) is int or type(kwargs['ratio']) is float:
+                    para['ratio'] = kwargs['ratio'] 
                 else:
-                    raise TypeError('cutoff is not float or int')
+                    raise TypeError('ratio is not float or int')
             elif k == '_filter':
-                if issubclass(type(kwargs['_filter'], Filter)):
+                if issubclass(type(kwargs['_filter']), Filter):
                     para['_filter'] = kwargs['_filter']
                 else:
                     raise TypeError("filter object is not a subclass of Filter")
         for k in para:
-            setattr(self, k, para[k])
+            if k == 'image':
+                self.__image = para['image']
+            elif k == 'roi_w':
+                self.roi_w = para['roi_w']
+            elif k == 'ratio':
+                self.ratio = para['ratio']
+            elif k == '_filter':
+                self.__filter = para['_filter']
