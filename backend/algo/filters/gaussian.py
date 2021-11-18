@@ -75,22 +75,22 @@ class GaussianFilter(FrequencyDomainFilter):
         if sigma_x is not None:
             if sigma_x is None and type(sigma_x) is not int and type(sigma_x) is not float:
                 raise ValueError("sigma_x is invalid")
-            self.__sigma_x = sigma_x
+            self.__sigma_x = sigma_x + 1e-6
 
         if sigma_y is not None:
             if sigma_y is None and type(sigma_y) is not int and type(sigma_y) is not float:
                 raise ValueError("sigma_y is invalid")
-            self.__sigma_y = sigma_y
+            self.__sigma_y = sigma_y + 1e-6
             
         if sigma_x2 is not None:
             if sigma_x2 is None and type(sigma_x2) is not int and type(sigma_x2) is not float:
                 raise ValueError("cutin is invalid")
-            self.__sigma_x2 = sigma_x2
+            self.__sigma_x2 = sigma_x2 + 1e-6
 
         if sigma_y2 is not None:
             if sigma_y2 is None and type(sigma_y2) is not int and type(sigma_y2) is not float:
                 raise ValueError("cutin is invalid")
-            self.__sigma_y2 = sigma_y2
+            self.__sigma_y2 = sigma_y2 + 1e-6
         
     def get_frequency_para(self):
         return {

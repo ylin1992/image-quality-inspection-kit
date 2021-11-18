@@ -25,7 +25,7 @@ class StainDetection(abc.ABC):
     
     @abc.abstractmethod
     def set_filter(self):
-        if not issubclass(filter.__class__, Filter):
+        if not issubclass(filter.__class__, FrequencyDomainFilter):
             raise ValueError("Make sure to input a valid Filter object")
         self.__filter = filter
         
