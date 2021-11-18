@@ -19,7 +19,7 @@ def test():
     
     image = cv2.imread('white_1x.png', 0)
     shape = image.shape
-    g3 = GaussianFilter(shape=shape, sigma_x=0.1, sigma_y=0.1, type='bp', sigma_x2=0.8, sigma_y2=0.8)
+    g3 = GaussianFilter(shape=shape, sigma_x=0.1, sigma_y=0.1, type='lp', sigma_x2=0.8, sigma_y2=0.8)
     blm = BlemishDetection(_filter=g3, image=image)
     res2 = blm.start_calculate(thr=1.0)
     plt.figure()

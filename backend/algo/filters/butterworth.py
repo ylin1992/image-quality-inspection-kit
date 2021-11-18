@@ -1,7 +1,6 @@
-from .filters import Filter
+from .filters import FrequencyDomainFilter
 import numpy as np
-class ButterworthFilter(Filter):
-    
+class ButterworthFilter(FrequencyDomainFilter):
     def __init__(self, shape, cutin=None, cutoff=None, type='bp'):
         if type == 'bp' and (cutin is None and cutoff is None):
             raise ValueError("Bandpass filter needs both cutin and cutoff")
@@ -10,17 +9,19 @@ class ButterworthFilter(Filter):
                 raise ValueError("Specify cutin for lowpass and high pass filter")
         self.set_frequency_para(cutin, cutoff)
         self.set_shape(shape)
-        self.gen_filt(type)
-                
-    def gen_filt(self, type):
-        if type == 'bp':
+        self.set_filter_type(type)
+        self.gen_filt()
+    
+    def gen_filt(self):
+        if self.__type == 'bp':
             self.__filt = self.band_pass(self.__shape, self.__cutin, self.__cutoff)
-        elif type == 'lp':
+        elif self.__type == 'lp':
             self.__filt = self.low_pass(self.__shape, self.__cutin)
-        elif type == 'hp':
+        elif self.__type == 'hp':
             self.__filt = self.high_pass(self.__shape, self.__cutin)
         else:
             raise ValueError("Invalid type: " + type)
+        
     def low_pass(self, shape, cutoff, x_as=1, y_as=1):
         cutoff += 1e-6
         rows, cols = shape
@@ -75,6 +76,18 @@ class ButterworthFilter(Filter):
             'cutin': self.__cutin,
             'cutoff': self.__cutoff
         }
+    
+    def set_filter_type(self, _type):
+        if _type is None:
+            raise ValueError("type is None")
+        if type(_type) is not str:
+            raise TypeError("type should be a string")
+        if _type != 'bp' and _type != 'lp' and _type != 'hp':
+            raise ValueError('type should be one of "bp", "hp", "lp"')
+        self.__type = _type
+    
+    def get_filter_type(self):
+        return self.__type
     
 
     

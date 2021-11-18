@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from .stain_detection import StainDetection
 from algo.filters.butterworth import ButterworthFilter
-from algo.filters.filters import Filter
+from algo.filters.filters import FrequencyDomainFilter
 
 class BlemishDetection(StainDetection):
     
@@ -138,7 +138,7 @@ class BlemishDetection(StainDetection):
                 else:
                     raise TypeError('ratio is not float or int')
             elif k == '_filter':
-                if issubclass(type(kwargs['_filter']), Filter):
+                if issubclass(type(kwargs['_filter']), FrequencyDomainFilter):
                     para['_filter'] = kwargs['_filter']
                 else:
                     raise TypeError("filter object is not a subclass of Filter")

@@ -1,7 +1,7 @@
 import numpy as np
 import abc
 
-class Filter(abc.ABC):
+class FrequencyDomainFilter(abc.ABC):
     @abc.abstractmethod
     def __init__(self, **kwargs):
         pass
@@ -41,4 +41,13 @@ class Filter(abc.ABC):
     @abc.abstractmethod
     def get_frequency_para(self):
         return NotImplemented
+    
+    @abc.abstractmethod
+    def set_filter_type(self):
+        return NotImplemented
+    
+    @abc.abstractmethod
+    def get_filter_type(self):
+        return NotImplemented
+        
     

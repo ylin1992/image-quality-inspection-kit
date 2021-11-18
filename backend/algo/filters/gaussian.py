@@ -1,8 +1,8 @@
 import numpy as np
 import abc
-from algo.filters.filters import Filter
+from algo.filters.filters import FrequencyDomainFilter
 
-class GaussianFilter(Filter):
+class GaussianFilter(FrequencyDomainFilter):
     def __init__(self, shape, sigma_x, sigma_y, type='bp', sigma_x2=None, sigma_y2=None):
         self.__sigma_x = None
         self.__sigma_x2 = None
@@ -12,7 +12,9 @@ class GaussianFilter(Filter):
             raise ValueError("Bandpass filter needs sigma_x2 and sigma_y2")
         self.set_frequency_para(sigma_x, sigma_y, sigma_x2, sigma_y2)
         self.set_shape(shape)
-        self.gen_filt(type)
+        self.set_filter_type(type)
+        self.gen_filt()
+        
     def get_filt(self):
         return self.__filt
     
@@ -24,12 +26,12 @@ class GaussianFilter(Filter):
         sy = sigma_y #* rows
         return np.exp( -( (x-cx)**2 / (2*sx**2) ) - ( (y-cy)**2 / (2*sy**2) ))
     
-    def gen_filt(self, type):
-        if type == 'bp':
+    def gen_filt(self):
+        if self.__type == 'bp':
             self.__filt = self.band_pass()
-        elif type == 'lp':
+        elif self.__type == 'lp':
             self.__filt = self.low_pass(self.__shape, self.__sigma_x, self.__sigma_y)
-        elif type == 'hp':
+        elif self.__type == 'hp':
             self.__filt = self.high_pass()
         else:
             raise ValueError("Invalid type: " + type)
@@ -97,3 +99,15 @@ class GaussianFilter(Filter):
             'sigma_x2': self.__sigma_x2 if self.__sigma_x2 is not None else None,
             'sigma_y2': self.__sigma_y2 if self.__sigma_y2 is not None else None
         }
+
+    def set_filter_type(self, _type):
+        if _type is None:
+            raise ValueError("type is None")
+        if type(_type) is not str:
+            raise TypeError("type should be a string")
+        if _type != 'bp' and _type != 'lp' and _type != 'hp':
+            raise ValueError('type should be one of "bp", "hp", "lp"')
+        self.__type = _type
+    
+    def get_filter_type(self):
+        return self.__type
