@@ -325,8 +325,6 @@ class Window(QMainWindow):
                 if filterBW == 2:
                     sigmax2 = float(self.lineEditSigmaX2.text())
                     sigmay2 = float(self.lineEditSigmaY2.text())
-            except Exception as e:
-                print(e)
 
                 filt = FilterService.get_gaussian_filter(shape=shape, 
                                                         sigma_x=sigmax, 
@@ -334,6 +332,9 @@ class Window(QMainWindow):
                                                         type=self._getBWFromIndex(filterBW),
                                                         sigma_x2=sigmax2,
                                                         sigma_y2=sigmay2)
+            except Exception as e:
+                print(e.__traceback__())
+
 
         self.axs[1].imshow(filt.get_filt())
         self.canvases[1].draw()
