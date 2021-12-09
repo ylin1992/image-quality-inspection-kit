@@ -1,12 +1,13 @@
 import sys
 import cv2
+import numpy as np
+
 from PyQt5.QtWidgets import QApplication, QLabel, QLineEdit, QComboBox, QWidget, QPushButton
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QAction
-
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -43,7 +44,7 @@ class State:
     def setFilterApplied(self, isApplied: bool):
         self._filter_applied = isApplied
     
-    def thresholdApplied(self, isApplied: bool):
+    def setThresholdApplied(self, isApplied: bool):
         self._threshold_applied = isApplied
 
     def resetAll(self):
@@ -204,7 +205,7 @@ class Window(QMainWindow):
                 self.btns[i].clicked.connect(self._applyFilter)
             else:
                 self.btns.append(QPushButton("Apply Threshold"))
-                self.btns[i].clicked.connect(self._applyFilter)
+                self.btns[i].clicked.connect(self._applyThreshold)
 
 
             vbox = QVBoxLayout()
@@ -335,15 +336,46 @@ class Window(QMainWindow):
             except Exception as e:
                 print(e.__traceback__())
 
-
-        self.axs[1].imshow(filt.get_filt())
-        self.canvases[1].draw()
+        if filt is not None:
+            self.filter = filt
+            self.state.setFilterGenerated((shape == self.rawImage.shape[:2]))
+            self.axs[1].imshow(filt.get_filt())
+            self.canvases[1].draw()
+            
         
     def _applyFilter(self):
-        print("Apply filter")
-    
+        if self.state.isImageLoaded() and self.state.isFilterGenerated():
+            try:
+                if len(self.rawImage.shape) > 2:
+                    self.appliedFilter = self.filter.apply(self.rawImage[:,:,0])
+                else:
+                    self.appliedFilter = self.filter.apply(self.rawImage)
+                self.axs[2].imshow(self.appliedFilter)
+                self.canvases[2].draw()
+            except Exception as e:
+                print(e)
+        else:
+            print("Filter or Image haven't been generated")
+
+        if self.appliedFilter is not None:
+            self.state.setFilterApplied(True)
+
     def _applyThreshold(self):
-        print("Apply Threshold")
+        if self.state.isImageLoaded() and self.state.isFilterGenerated and self.state.isFilterApplied():
+            try:
+                threshold = float(self.lineEditThreshold.text())
+                print("Treshold: ", threshold)
+                self.appliedThreshold = np.zeros_like(self.filter.get_filt(), dtype=np.uint8)
+                self.appliedThreshold[self.appliedFilter > threshold] = 255
+                self.axs[3].imshow(self.appliedThreshold)
+                self.canvases[3].draw()
+            except Exception as e:
+                print(e)
+        else:
+            print("Previos step must be done first")
+
+        if self.appliedThreshold is not None:
+            self.state.setThresholdApplied(True)
 
     def _getBWFromIndex(self, option):
         return self.BWs[option]

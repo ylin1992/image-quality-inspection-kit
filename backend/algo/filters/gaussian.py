@@ -65,10 +65,8 @@ class GaussianFilter(FrequencyDomainFilter):
             raise ValueError("Invalid shape")
         self.__shape = shape
     
-    def get_shape(self, shape):
-        if shape is None or len(shape) != 2:
-            raise ValueError("Shape is invalid")
-        self.__shape = shape
+    def get_shape(self):
+        return self.__shape
         
         
     def set_frequency_para(self, sigma_x, sigma_y, sigma_x2=None, sigma_y2=None):

@@ -55,10 +55,8 @@ class ButterworthFilter(FrequencyDomainFilter):
             raise ValueError("Invalid shape")
         self.__shape = shape
     
-    def get_shape(self, shape):
-        if shape is None or len(shape) != 2:
-            raise ValueError("Shape is invalid")
-        self.__shape = shape
+    def get_shape(self):
+        return self.__shape
         
     def set_frequency_para(self, cutin, cutoff):
         if cutin is not None:
