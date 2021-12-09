@@ -1,6 +1,6 @@
 import numpy as np
 import abc
-from algo.filters.filters import FrequencyDomainFilter
+from backend.algo.filters.filters import FrequencyDomainFilter
 
 class GaussianFilter(FrequencyDomainFilter):
     def __init__(self, shape, sigma_x, sigma_y, type='bp', sigma_x2=None, sigma_y2=None):

@@ -1,6 +1,6 @@
 from multiprocessing.sharedctypes import Value
 from typing import overload
-from algo.filters.gaussian import GaussianFilter
+from backend.algo.filters.gaussian import GaussianFilter
 import numpy as np
 
 class LaplacianOfGaussianFilter(GaussianFilter):
@@ -9,7 +9,7 @@ class LaplacianOfGaussianFilter(GaussianFilter):
         self.__dir = None
         self.set_dir(dir)
         super().__init__(shape, sigma_x, sigma_y, type=type, sigma_x2=sigma_x2, sigma_y2=sigma_y2)
-        
+
     def low_pass(self, shape, sigma_x, sigma_y, cx=0, cy=0):
         rows, cols = shape
 
