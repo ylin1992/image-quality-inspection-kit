@@ -1,2 +1,5 @@
-**/__pycahce__/
+**/__pycache__/
 **/env/
+**/test/
+*.pyc
+**/test/
