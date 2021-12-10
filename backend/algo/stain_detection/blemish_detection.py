@@ -2,8 +2,9 @@ from typing import Type
 import cv2
 import numpy as np
 from .stain_detection import StainDetection
-from algo.filters.butterworth import ButterworthFilter
-from algo.filters.filters import FrequencyDomainFilter
+from backend.algo.filters.butterworth import ButterworthFilter
+from backend.algo.filters.filters import FrequencyDomainFilter
+from multiprocessing.pool import ThreadPool
 
 class BlemishDetection(StainDetection):
     
@@ -12,6 +13,8 @@ class BlemishDetection(StainDetection):
         self.__dual_mode = False
         self.roi_w = None
         self.ratio = None
+        self.filtered_target = None
+        self.filtered_ref = None
         if _filter is None:
             raise ValueError("filter is None")
         if image is None:
@@ -22,13 +25,23 @@ class BlemishDetection(StainDetection):
         if ref_image is not None and roi_w is None and ratio is None:
             raise ValueError('ref_image is found but "roi_w" or "ratio" is not found')
         
+        if ref_image is None:
+            raise ValueError('If ref_img is None, please specify thr')
+
         if ref_image is not None:
             self.__ref_image = ref_image
             self.__dual_mode = True
             self.roi_w = roi_w
             self.ratio = ratio
+
         
     def start_calculate(self, thr):
+        '''
+            dual_mode: thr acts as a lower bound of filterd image to prevent noise
+                        where result[filtered_image < thr] = 0
+            single_mode: thr acts as an upper bound of filtered image
+                        where result[filtered_image > thr] = 255
+        '''
         if not self.has_image():
             raise ValueError("Please input testing image first")
         if self.__dual_mode:
@@ -71,19 +84,30 @@ class BlemishDetection(StainDetection):
             raise ValueError("Mismatch between image and ref_image, ref_image: ", self.__ref_image.shape, " filter: ", self.__filter.get_filt().shape)
         if self.__image.shape != self.__filter.get_filt().shape:
             raise ValueError("Mismatch between image and image, ref_image: ", self.__image.shape, " filter: ", self.__filter.get_filt().shape)
-        filtered_ref = self.__filter.apply(self.__ref_image)
-        filtered_target = self.__filter.apply(self.__image)
+        
+        pool = ThreadPool(processes=2)
+        image_result = pool.apply_async(self.__filter.apply, (self.__image, )) # tuple of args for foo
+        ref_image_result = pool.apply_async(self.__filter.apply, (self.__ref_image, ))
+        
+        # filtered_ref = self.__filter.apply(self.__ref_image)
+        # filtered_target = self.__filter.apply(self.__image)
+        filtered_ref = ref_image_result.get()
+        filtered_target = image_result.get()
+
         thr_map = self.__get_threshold_map(filtered_ref)
         res = np.zeros_like(self.__ref_image)
         res[filtered_target > thr_map] = 255
         res[filtered_target < thr] = 0
-        return res
+
+        self.filtered_ref = filtered_ref
+        self.filtered_target = filtered_target
+        return res, thr_map
     
     def __calculate_by_target_image(self, thr):
         filtered_target = self.__filter.apply(self.__image)
         res = np.zeros_like(self.__image, dtype=float)
         res[filtered_target > thr] = 255
-        return res
+        return res, None
     
     def set_image(self, image):
         if image is None:
@@ -142,6 +166,8 @@ class BlemishDetection(StainDetection):
                     para['_filter'] = kwargs['_filter']
                 else:
                     raise TypeError("filter object is not a subclass of Filter")
+
+
         for k in para:
             if k == 'image':
                 self.__image = para['image']

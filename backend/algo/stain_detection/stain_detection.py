@@ -1,5 +1,5 @@
 import abc
-from algo.filters.filters import FrequencyDomainFilter
+from backend.algo.filters.filters import FrequencyDomainFilter
 
 
 class StainDetection(abc.ABC):

@@ -269,6 +269,9 @@ class BlemishDetectionWindow(QDialog):
                 
         self._updateImagePaths()
     
+    '''
+        TODO: Start calculate and add service layer
+    '''
     def _calculate(self):
         pass
 
