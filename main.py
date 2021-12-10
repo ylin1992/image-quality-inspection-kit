@@ -1,3 +1,4 @@
-from gui import main
+from gui import filterTuner, blemishDetection
 
-main.main()
+# filterTuner.run()
+blemishDetection.run()
