@@ -177,8 +177,7 @@ class FilterTuner(QMainWindow):
             i == 2: applied filter
             i == 3: threshold
         '''
-        font = {'family' : 'normal',
-                'size'   : 5}
+        font = {'size'   : 5}
         matplotlib.rc('font', **font)
         self.figures = []
         self.canvases = []

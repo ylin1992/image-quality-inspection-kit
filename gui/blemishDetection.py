@@ -33,6 +33,7 @@ class BlemishDetectionWindow(QDialog):
         self._isRefLoaded = False
         self._isAppliedThreshold = False
         self._isFilterLoaded = False
+        self._dual_mode = self.cboxDetectionMode.currentIndex() == 1
         self.filter = None
         self.dutImagePath = None
         self.refImagePath = None
@@ -54,6 +55,7 @@ class BlemishDetectionWindow(QDialog):
         self.cboxDetectionMode.addItem("Single Mode")
         self.cboxDetectionMode.addItem("Dual Mode")
         self.cboxDetectionMode.currentIndexChanged[int].connect(self._updateEditTextVisibility)
+        self.cboxDetectionMode.currentIndexChanged[int].connect(self._updateMode)
 
         self.btnLoadDUTImage = QPushButton("Load DUT Image")
         self.btnLoadDUTImage.clicked.connect(self._loadDUTImage)
@@ -248,7 +250,7 @@ class BlemishDetectionWindow(QDialog):
             i == 1: filtered_DUT
             i == 2: applied_threshold
         '''
-        font = {'family' : 'normal',
+        font = {
                 'size'   : 5}
         matplotlib.rc('font', **font)
         self.figures = []
@@ -352,7 +354,7 @@ class BlemishDetectionWindow(QDialog):
 
     def _updateCanvasImage(self):
         self.figure.clear()
-        if self._isRefLoaded: # dual mode
+        if self._dual_mode: # dual mode
             ax1 = self.figure.add_subplot(141)
             if self.filteredTarget is not None:
                 ax1.imshow(self.filteredTarget)
@@ -445,6 +447,10 @@ class BlemishDetectionWindow(QDialog):
             plt.show()
         else:
             QMessageBox.warning(self, "warning", "Filter is not Loaded")
+
+    def _updateMode(self):
+        print("Mode changed")
+        self._dual_mode = self.cboxDetectionMode.currentIndex() == 1
 
 def run():
     app = QApplication(sys.argv)
