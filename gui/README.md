@@ -16,7 +16,7 @@ The tuner provides a visualized interface containing:
 - Image after being applied the filter
 - A binarized result image by thresholding
 
-![demo_gui_filter_tuner](https://github.com/ylin1992/image-quality-inspection-kit/blob/main/screenshot/IQI_filter_tuner.gif)
+![demo_gui_filter_tuner](https://github.com/ylin1992/image-quality-inspection-kit/blob/main/screenshot/filter_tuner_demo.gif)
 
 ***Load an image:*** Load an image (ends with jpg, png or bmp) from **File->Open Image** <br />
 ***Pick a filter type:***  Pick a filter type from the scroll-down menu. The toolbox provides below filter so far:
