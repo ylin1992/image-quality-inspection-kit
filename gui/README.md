@@ -15,9 +15,9 @@ The tuner provides a visualized interface containing:
 - Real part of Fourier-Domain filter
 - Image after being applied the filter
 - A binarized result image by thresholding
-<br />
+
 ![demo_gui_filter_tuner](https://github.com/ylin1992/image-quality-inspection-kit/blob/main/screenshot/IQI_filter_tuner.png)
-<br />
+
 ***Load an image:*** Load an image (ends with jpg, png or bmp)
 ***Pick a filter type:***  Pick a filter type from the scroll-down menu. The toolbox provides below filter so far:
 - Butterworth filter
