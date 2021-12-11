@@ -95,8 +95,14 @@ class BlemishDetectionWindow(QDialog):
         self.cboxLoGDir.addItem("Horzontal")
         self.cboxLoGDir.addItem("Circular")
         self.labelTreshold = QLabel("Threshold")
+        
+        vboxFilterBtnsLayout = QVBoxLayout()
         self.btnUpdateFilter = QPushButton("Update filter")
         self.btnUpdateFilter.clicked.connect(self._updateFilter)
+        self.btnShowFilter = QPushButton("Show filter")
+        self.btnShowFilter.clicked.connect(self._showFilter)
+        vboxFilterBtnsLayout.addWidget(self.btnUpdateFilter)
+        vboxFilterBtnsLayout.addWidget(self.btnShowFilter)
 
         detectionModeHboxLayout = QGridLayout()
         detectionModeHboxLayout.addWidget(QLabel("Detection Mode:"), 0, 1, 1, 1)
@@ -147,7 +153,8 @@ class BlemishDetectionWindow(QDialog):
         hboxLayout.addWidget(self.lineEditSigmaY2)  
         hboxLayout.addWidget(self.labelLogDir)
         hboxLayout.addWidget(self.cboxLoGDir)
-        hboxLayout.addWidget(self.btnUpdateFilter)
+        # hboxLayout.addWidget(self.btnUpdateFilter)
+        hboxLayout.addLayout(vboxFilterBtnsLayout)
 
         vboxLayout.addLayout(detectionModeHboxLayout)
         vboxLayout.addLayout(loadImageHboxLayout)
@@ -431,6 +438,13 @@ class BlemishDetectionWindow(QDialog):
             self._isFilterLoaded = True
             QMessageBox.information(self, "success", "Success")
 
+    def _showFilter(self):
+        if self._isFilterLoaded:
+            plt.figure()
+            plt.imshow(self.filter.get_filt())
+            plt.show()
+        else:
+            QMessageBox.warning(self, "warning", "Filter is not Loaded")
 
 def run():
     app = QApplication(sys.argv)
