@@ -16,6 +16,7 @@ The tuner provides a visualized interface containing:
 - Image after being applied the filter
 - A binarized result image by thresholding
 
+![demo_gui_filter_tuner](https://github.com/ylin1992/image-quality-inspection-kit/blob/main/screenshot/IQI_filter_tuner.png)
 ![demo_gui_filter_tuner](https://github.com/ylin1992/image-quality-inspection-kit/blob/main/screenshot/filter_tuner_demo.gif)
 
 ***Load an image:*** Load an image (ends with jpg, png or bmp) from **File->Open Image** <br />
@@ -40,6 +41,7 @@ The tuner provides a visualized interface containing:
 ## Detection tuner
 The detection tuner provides a work flow how an optical engineer or quality control engineer works on determining a suitable filter parameter used in AOI on a new product's production lines.  
 ![demo_gui_dection_tuner](https://github.com/ylin1992/image-quality-inspection-kit/blob/main/screenshot/detection_tuner.png)
+![demo_gui_dection_tuner](https://github.com/ylin1992/image-quality-inspection-kit/blob/main/screenshot/detection_tuner.gif)
 
 The app provides two modes for particle detection: **Single mode** and **Dual mode**.
 - ***Single mode:*** Single mode needs a single DUT(Device Under Tested) image, the image applies a filter specified on the UI, and finally will be binarized by a threshold.
