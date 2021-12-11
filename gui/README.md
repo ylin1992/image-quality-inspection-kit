@@ -54,6 +54,7 @@ Based on the difference mentioned above, one approach is to take a standard imag
 
 ***Select a mode:*** Specify a mode from the scroll down menu.
 <br />
+<br />
 ***Load image(s):*** Load DUT image only if Single mode is selected. Load additional Ref Image if dual mode is selectde.
 <br />
 
