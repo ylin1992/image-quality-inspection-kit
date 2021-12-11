@@ -21,3 +21,6 @@ def get_butterworth_filter(shape, cutin, cutoff=0, type='bp'):
     except Exception as e:
         print(e)
         return None
+
+def get_filter_shape(filter: FrequencyDomainFilter):
+    return filter.get_shape()

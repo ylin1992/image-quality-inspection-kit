@@ -25,8 +25,6 @@ class BlemishDetection(StainDetection):
         if ref_image is not None and roi_w is None and ratio is None:
             raise ValueError('ref_image is found but "roi_w" or "ratio" is not found')
         
-        if ref_image is None:
-            raise ValueError('If ref_img is None, please specify thr')
 
         if ref_image is not None:
             self.__ref_image = ref_image
@@ -104,9 +102,9 @@ class BlemishDetection(StainDetection):
         return res, thr_map
     
     def __calculate_by_target_image(self, thr):
-        filtered_target = self.__filter.apply(self.__image)
+        self.filtered_target = self.__filter.apply(self.__image)
         res = np.zeros_like(self.__image, dtype=float)
-        res[filtered_target > thr] = 255
+        res[self.filtered_target > thr] = 255
         return res, None
     
     def set_image(self, image):
@@ -143,6 +141,12 @@ class BlemishDetection(StainDetection):
     def has_filter(self):
         return (self.__filter is not None)
     
+    def get_filtered_target_image(self):
+        return self.filtered_target
+
+    def get_filtered_ref_image(self):
+        return self.filtered_ref
+
     def set_para(self, **kwargs):
         para = {}
         for k in kwargs:

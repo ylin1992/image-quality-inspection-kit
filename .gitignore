@@ -4,3 +4,4 @@
 *.pyc
 **/test/
 .DS_Store
+test.py
