@@ -3,7 +3,7 @@ import cv2
 from matplotlib import widgets
 import numpy as np
 
-from PyQt5.QtWidgets import QApplication, QDialog, QGridLayout, QLabel, QLineEdit, QComboBox, QWidget, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QApplication, QDialog, QGridLayout, QLabel, QLineEdit, QComboBox, QPlainTextEdit, QWidget, QPushButton, QMessageBox
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
 from PyQt5.QtWidgets import QFileDialog
@@ -76,9 +76,9 @@ class BlemishDetectionWindow(QDialog):
         self.cboxFilterBW.addItem("Band Pass")
         self.cboxFilterBW.currentIndexChanged[int].connect(self._updateEditTextVisibility)
 
-        self.lineEditCutInFrequency = QLineEdit()
-        self.lineEditCutOffFrequency = QLineEdit()
-        self.lineEditThreshold = QLineEdit()
+        self.lineEditCutInFrequency = QLineEdit("0.03")
+        self.lineEditCutOffFrequency = QLineEdit("0.5")
+        self.lineEditThreshold = QLineEdit("0.1")
         self.lineEditSigmaX = QLineEdit()
         self.lineEditSigmaY = QLineEdit()
         self.lineEditSigmaX2 = QLineEdit()
@@ -154,7 +154,13 @@ class BlemishDetectionWindow(QDialog):
         vboxLayout.addLayout(hboxLayout)
         vboxLayout.addLayout(dualModeParaGridLayout)
         figuresLayout = self._createCanvasLayout()
-        vboxLayout.addLayout(figuresLayout)
+
+        descriptionAndFiguresGrid = QGridLayout()
+        self.plainTextLineEditStatus = QPlainTextEdit()
+        descriptionAndFiguresGrid.addLayout(figuresLayout, 0, 1)
+        # descriptionAndFiguresGrid.addWidget(self.plainTextLineEditStatus, 0, 2)
+        
+        vboxLayout.addLayout(descriptionAndFiguresGrid)
         
         self.btnCalculate = QPushButton("DETECT")
         self.btnCalculate.clicked.connect(self._calculate)
@@ -180,7 +186,10 @@ class BlemishDetectionWindow(QDialog):
         self.cboxLoGDir.setVisible(False)
         self.btnLoadRefImage.setVisible(True)
         self.labelRefImagePath.setVisible(True)
-        
+        self.labelRatio.setVisible(False)
+        self.lineEditRatio.setVisible(False)
+        self.labelRoiW.setVisible(False)
+        self.lineEditRoiW.setVisible(False)
         # canvases
         # self.canvasWidgets[1].setVisible(False)
         # self.canvasWidgets[2].setVisible(False)
@@ -213,13 +222,14 @@ class BlemishDetectionWindow(QDialog):
                 self.lineEditCutOffFrequency.setVisible(True)
 
         if self.cboxDetectionMode.currentIndex() == 0: # single mode
-            # self.labelTreshold.setVisible(True)
-            # self.lineEditThreshold.setVisible(True)
             self.btnLoadRefImage.setVisible(False)
             self.labelRefImagePath.setVisible(False)
-        # elif self.cboxDetectionMode.currentIndex() == 1:
-        #     self.canvasWidgets[1].setVisible(True)
-        #     self.canvasWidgets[2].setVisible(True)
+        else:
+            self.labelRatio.setVisible(True)
+            self.lineEditRatio.setVisible(True)
+            self.labelRoiW.setVisible(True)
+            self.lineEditRoiW.setVisible(True)
+            
 
     '''
         @TODO: Refine functions
@@ -419,6 +429,7 @@ class BlemishDetectionWindow(QDialog):
         if filt is not None:
             self.filter = filt
             self._isFilterLoaded = True
+            QMessageBox.information(self, "success", "Success")
 
 
 def run():
