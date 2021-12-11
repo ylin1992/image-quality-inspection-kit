@@ -182,8 +182,8 @@ class BlemishDetectionWindow(QDialog):
         self.labelRefImagePath.setVisible(True)
         
         # canvases
-        self.canvasWidgets[1].setVisible(False)
-        self.canvasWidgets[2].setVisible(False)
+        # self.canvasWidgets[1].setVisible(False)
+        # self.canvasWidgets[2].setVisible(False)
 
         if filterType == 2 or filterType == 1:
             self.labelSigmaX.setVisible(True)
@@ -217,9 +217,9 @@ class BlemishDetectionWindow(QDialog):
             # self.lineEditThreshold.setVisible(True)
             self.btnLoadRefImage.setVisible(False)
             self.labelRefImagePath.setVisible(False)
-        elif self.cboxDetectionMode.currentIndex() == 1:
-            self.canvasWidgets[1].setVisible(True)
-            self.canvasWidgets[2].setVisible(True)
+        # elif self.cboxDetectionMode.currentIndex() == 1:
+        #     self.canvasWidgets[1].setVisible(True)
+        #     self.canvasWidgets[2].setVisible(True)
 
     '''
         @TODO: Refine functions
@@ -239,32 +239,14 @@ class BlemishDetectionWindow(QDialog):
         self.axs = []
         self.btns = []
         self.canvasWidgets = []
-        hbox = QHBoxLayout()
-        for i in range(4):
-            fig = plt.figure(figsize=(10,10))
-            canvas = FigureCanvas(fig)
-            self.figures.append(fig)
-            self.canvases.append(canvas)
-            toolbar = NavigationToolbar(canvas, self)
-            widget = QWidget()
-            widget.setLayout(QVBoxLayout())
-            widget.layout().addWidget(toolbar)
-            widget.layout().addWidget(canvas)
-            self.canvasWidgets.append(widget)
-            if i == 0:
-                ax = fig.add_subplot(111)
-            else:
-                ax = fig.add_subplot(111, sharex=self.axs[0], sharey=self.axs[0])
+        vbox = QVBoxLayout()
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        vbox.addWidget(self.toolbar)
+        vbox.addWidget(self.canvas)
 
-            self.axs.append(ax)
-
-            vbox = QVBoxLayout()
-            vbox.addWidget(widget)
-            # vbox.addWidget(toolbar)
-            # vbox.addWidget(canvas)
-            hbox.addLayout(vbox)
-
-        return hbox
+        return vbox
 
     def _updateImagePaths(self):
         if self._isDUTLoaded:
@@ -352,17 +334,37 @@ class BlemishDetectionWindow(QDialog):
 
 
     def _updateCanvasImage(self):
-        if self.filteredTarget is not None:
-            self.axs[0].imshow(self.filteredTarget)
-        
-        if self.filteredRef is not None:
-            self.axs[1].imshow(self.filteredRef)
-        
-        if self.map is not None:
-            self.axs[2].imshow(self.map)
-
-        if self.res is not None:
-            self.axs[3].imshow(self.res)
+        self.figure.clear()
+        if self._isRefLoaded: # dual mode
+            ax1 = self.figure.add_subplot(141)
+            if self.filteredTarget is not None:
+                ax1.imshow(self.filteredTarget)
+            ax2 = self.figure.add_subplot(142, sharex=ax1, sharey=ax1)
+            ax2.axes.xaxis.set_visible(False)
+            ax2.axes.yaxis.set_visible(False)
+            if self.filteredRef is not None:
+                ax2.imshow(self.filteredRef)
+            ax3 = self.figure.add_subplot(143, sharex=ax1, sharey=ax1)
+            ax3.axes.xaxis.set_visible(False)
+            ax3.axes.yaxis.set_visible(False)
+            if self.map is not None:
+                ax3.imshow(self.map)
+            ax4 = self.figure.add_subplot(144, sharex=ax1, sharey=ax1)
+            ax4.axes.xaxis.set_visible(False)
+            ax4.axes.yaxis.set_visible(False)
+            if self.res is not None:
+                ax4.imshow(self.res)
+        else:
+            ax1 = self.figure.add_subplot(121)
+            if self.filteredTarget is not None:
+                ax1.imshow(self.filteredTarget)
+            ax4 = self.figure.add_subplot(122, sharex=ax1, sharey=ax1)
+            ax4.axes.xaxis.set_visible(False)
+            ax4.axes.yaxis.set_visible(False)
+            if self.res is not None:
+                ax4.imshow(self.res)
+        self.figure.tight_layout()
+        self.canvas.draw_idle()
 
     def _updateFilter(self):
         filterType = self.cboxFilterType.currentIndex()
