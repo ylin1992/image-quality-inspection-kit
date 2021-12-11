@@ -8,7 +8,7 @@ All of the two demos are based on backend's services (BlemishDetectionService an
 **Modify main file:** In the ```main.py``` file, pick one of the demos and command out the others <br />
 **Run the app** run ```python3 main.py```
 
-# UI description:
+# UI description
 ## IQI Filter tuner
 The tuner provides a visualized interface containing:
 - Input raw image
