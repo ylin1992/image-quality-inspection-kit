@@ -1,7 +1,7 @@
 from backend.algo.stain_detection import blemish_detection
 from backend.algo.stain_detection.blemish_detection import BlemishDetection
 from backend.algo.filters.filters import FrequencyDomainFilter
-
+import cv2
 class BlemishDetectionService:
     def __init__(self, image=None, filter=None, ref_image=None, ratio=None, roi_w=None):
         self._image = image
@@ -16,14 +16,17 @@ class BlemishDetectionService:
             self._dual_mode = True
 
         try:
-            self.createBlemishDetectionObject()
+            self.initBlemishDetectionObject()
         except:
             pass
 
-    def createBlemishDetectionObject(self):
+    def initBlemishDetectionObject(self):
         if self._image is None:
             raise ValueError("Image is not loaded")
         
+        if len(self._image.shape) > 2:
+            self._image = cv2.cvtColor(self._image, cv2.COLOR_BGR2GRAY)
+
         if self._filter is None:
             raise ValueError("Filter is not loaded")
 
@@ -32,6 +35,8 @@ class BlemishDetectionService:
 
         try:
             if self._dual_mode:
+                if len(self._ref_image.shape) > 2:
+                    self._ref_image = cv2.cvtColor(self._ref_image, cv2.COLOR_BGR2GRAY)
                 self._blm = BlemishDetection(self._image, self._filter, self._ref_image, self._ratio, self._roi_w)
             else:
                 self._blm = BlemishDetection(self._image, self._filter)
@@ -46,7 +51,7 @@ class BlemishDetectionService:
         res, map = self._blm.start_calculate(thr)
         return res, map
 
-    def resetAll(self):
+    def reset_all(self):
         self._image = None
         self._filter = None
         self._ref_image = None

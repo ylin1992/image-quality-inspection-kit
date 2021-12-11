@@ -1,5 +1,6 @@
 import sys
 import cv2
+from matplotlib import widgets
 import numpy as np
 
 from PyQt5.QtWidgets import QApplication, QDialog, QGridLayout, QLabel, QLineEdit, QComboBox, QWidget, QPushButton, QMessageBox
@@ -14,6 +15,9 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 import matplotlib.pyplot as plt
 import matplotlib
 
+from backend.service.DetectionService import BlemishDetectionService
+from backend.service import FilterService
+
 class BlemishDetectionWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -22,13 +26,25 @@ class BlemishDetectionWindow(QDialog):
         self._initPara()
         self._updateEditTextVisibility(self.cboxDetectionMode.currentIndex())
 
-
+        
     def _initPara(self):
+        self.BWs = ['lp', 'hp', 'bp']
         self._isDUTLoaded = False
         self._isRefLoaded = False
         self._isAppliedThreshold = False
+        self._isFilterLoaded = False
+        self.filter = None
         self.dutImagePath = None
         self.refImagePath = None
+        self.rawImage = None
+        self.refImage = None
+        self.res = None
+        self.map = None
+        self.filteredTarget = None
+        self.filteredRef = None
+        self.roi_w = 100
+        self.ratio = 0.99
+        self.blemishDetectionService = BlemishDetectionService()
 
     def _createWidgets(self):
         hboxLayout = QHBoxLayout()
@@ -79,6 +95,8 @@ class BlemishDetectionWindow(QDialog):
         self.cboxLoGDir.addItem("Horzontal")
         self.cboxLoGDir.addItem("Circular")
         self.labelTreshold = QLabel("Threshold")
+        self.btnUpdateFilter = QPushButton("Update filter")
+        self.btnUpdateFilter.clicked.connect(self._updateFilter)
 
         detectionModeHboxLayout = QGridLayout()
         detectionModeHboxLayout.addWidget(QLabel("Detection Mode:"), 0, 1, 1, 1)
@@ -106,7 +124,10 @@ class BlemishDetectionWindow(QDialog):
         dualModeParaGridLayout.addWidget(self.lineEditRatio, 0, 2, 1, 1)
         dualModeParaGridLayout.addWidget(self.labelRoiW, 0, 3, 1, 1)
         dualModeParaGridLayout.addWidget(self.lineEditRoiW, 0, 4, 1, 1)
-        dualModeParaGridLayout.addWidget(QLabel(""), 0, 5, 1, 4)
+        dualModeParaGridLayout.addWidget(self.labelTreshold, 0, 5, 1, 1)
+        dualModeParaGridLayout.addWidget(self.lineEditThreshold, 0, 6, 1, 1)
+        # dualModeParaGridLayout.addWidget(QLabel(""), 0, 7, 1, 4)
+
 
         hboxLayout.addWidget(QLabel("Filter Type:"))
         hboxLayout.addWidget(self.cboxFilterType)
@@ -126,8 +147,7 @@ class BlemishDetectionWindow(QDialog):
         hboxLayout.addWidget(self.lineEditSigmaY2)  
         hboxLayout.addWidget(self.labelLogDir)
         hboxLayout.addWidget(self.cboxLoGDir)
-        hboxLayout.addWidget(self.labelTreshold)
-        hboxLayout.addWidget(self.lineEditThreshold)
+        hboxLayout.addWidget(self.btnUpdateFilter)
 
         vboxLayout.addLayout(detectionModeHboxLayout)
         vboxLayout.addLayout(loadImageHboxLayout)
@@ -136,7 +156,7 @@ class BlemishDetectionWindow(QDialog):
         figuresLayout = self._createCanvasLayout()
         vboxLayout.addLayout(figuresLayout)
         
-        self.btnCalculate = QPushButton("Detect")
+        self.btnCalculate = QPushButton("DETECT")
         self.btnCalculate.clicked.connect(self._calculate)
         vboxLayout.addWidget(self.btnCalculate)
         self.setLayout(vboxLayout)
@@ -158,10 +178,12 @@ class BlemishDetectionWindow(QDialog):
         self.lineEditCutOffFrequency.setVisible(False)
         self.labelLogDir.setVisible(False)
         self.cboxLoGDir.setVisible(False)
-        self.lineEditThreshold.setVisible(False)
-        self.labelTreshold.setVisible(False)
         self.btnLoadRefImage.setVisible(True)
         self.labelRefImagePath.setVisible(True)
+        
+        # canvases
+        self.canvasWidgets[1].setVisible(False)
+        self.canvasWidgets[2].setVisible(False)
 
         if filterType == 2 or filterType == 1:
             self.labelSigmaX.setVisible(True)
@@ -191,10 +213,13 @@ class BlemishDetectionWindow(QDialog):
                 self.lineEditCutOffFrequency.setVisible(True)
 
         if self.cboxDetectionMode.currentIndex() == 0: # single mode
-            self.labelTreshold.setVisible(True)
-            self.lineEditThreshold.setVisible(True)
+            # self.labelTreshold.setVisible(True)
+            # self.lineEditThreshold.setVisible(True)
             self.btnLoadRefImage.setVisible(False)
             self.labelRefImagePath.setVisible(False)
+        elif self.cboxDetectionMode.currentIndex() == 1:
+            self.canvasWidgets[1].setVisible(True)
+            self.canvasWidgets[2].setVisible(True)
 
     '''
         @TODO: Refine functions
@@ -213,14 +238,19 @@ class BlemishDetectionWindow(QDialog):
         self.canvases = []
         self.axs = []
         self.btns = []
+        self.canvasWidgets = []
         hbox = QHBoxLayout()
-        for i in range(3):
+        for i in range(4):
             fig = plt.figure(figsize=(10,10))
             canvas = FigureCanvas(fig)
             self.figures.append(fig)
             self.canvases.append(canvas)
             toolbar = NavigationToolbar(canvas, self)
-            
+            widget = QWidget()
+            widget.setLayout(QVBoxLayout())
+            widget.layout().addWidget(toolbar)
+            widget.layout().addWidget(canvas)
+            self.canvasWidgets.append(widget)
             if i == 0:
                 ax = fig.add_subplot(111)
             else:
@@ -229,8 +259,9 @@ class BlemishDetectionWindow(QDialog):
             self.axs.append(ax)
 
             vbox = QVBoxLayout()
-            vbox.addWidget(toolbar)
-            vbox.addWidget(canvas)
+            vbox.addWidget(widget)
+            # vbox.addWidget(toolbar)
+            # vbox.addWidget(canvas)
             hbox.addLayout(vbox)
 
         return hbox
@@ -240,6 +271,9 @@ class BlemishDetectionWindow(QDialog):
             self.labelDUTImagePath.setText(self.dutImagePath) 
         if self._isRefLoaded:
             self.labelRefImagePath.setText(self.refImagePath)
+
+    def _getBWFromIndex(self, option):
+        return self.BWs[option] 
 # --------------------------------------------------
 # signal functions
 # --------------------------------------------------
@@ -259,8 +293,8 @@ class BlemishDetectionWindow(QDialog):
     def _loadRefImage(self):
         imagePath, _ = QFileDialog.getOpenFileName()
         if imagePath:
-            self.rawImage = cv2.imread(imagePath)
-            if self.rawImage is not None:
+            self.refImage = cv2.imread(imagePath)
+            if self.refImage is not None:
                 self._isRefLoaded = True
                 self.refImagePath = imagePath
             else:
@@ -273,7 +307,117 @@ class BlemishDetectionWindow(QDialog):
         TODO: Start calculate and add service layer
     '''
     def _calculate(self):
-        pass
+        if not self._isDUTLoaded:
+            QMessageBox.warning(self, "warning", "DUT image is not loaded")
+            return 
+
+        if not self._isFilterLoaded:
+            QMessageBox.warning(self, "warning", "Filter is not loaded")
+            return
+        
+        self.blemishDetectionService.set_image(self.rawImage)
+        self.blemishDetectionService.set_filter(self.filter)
+
+        detectionMode = self.cboxDetectionMode.currentIndex()
+        try:
+            thr = float(self.lineEditThreshold.text())
+        except:
+            QMessageBox.warning(self, "warning", "Invalid Threshold Value")
+            return 
+        if detectionMode == 0: # single mode
+            self.blemishDetectionService.initBlemishDetectionObject()
+            self.res, _ = self.blemishDetectionService.start_calculate(thr)
+            self.filteredTarget = self.blemishDetectionService.get_filtered_target_image()
+
+        elif detectionMode == 1:
+            if not self._isRefLoaded:
+                QMessageBox.warning(self, "warning", "Ref image is not loaded")
+                return
+            
+            try:
+                self.roi_w = int(self.lineEditRoiW.text())
+                self.ratio = float(self.lineEditRatio.text())
+            except:
+                QMessageBox.warning(self, "warning", "Invalid ROI width or ratio")
+            
+            self.blemishDetectionService.set_ref_image(self.refImage)
+            self.blemishDetectionService.set_ratio(self.ratio)
+            self.blemishDetectionService.set_roi_w(self.roi_w)
+            self.blemishDetectionService.initBlemishDetectionObject()
+            self.res, self.map = self.blemishDetectionService.start_calculate(thr)
+            self.filteredTarget = self.blemishDetectionService.get_filtered_target_image()
+            self.filteredRef = self.blemishDetectionService.get_filtered_ref_image()
+
+        self._updateCanvasImage()
+
+
+    def _updateCanvasImage(self):
+        if self.filteredTarget is not None:
+            self.axs[0].imshow(self.filteredTarget)
+        
+        if self.filteredRef is not None:
+            self.axs[1].imshow(self.filteredRef)
+        
+        if self.map is not None:
+            self.axs[2].imshow(self.map)
+
+        if self.res is not None:
+            self.axs[3].imshow(self.res)
+
+    def _updateFilter(self):
+        filterType = self.cboxFilterType.currentIndex()
+        filterBW = self.cboxFilterBW.currentIndex()
+
+        print(filterType, filterBW)
+
+        filt = None
+        cutin = 0
+        cutoff = 0
+        sigmax = 0
+        sigmay = 0
+        sigmax2 = 0
+        sigmay2 = 0
+        shape = None
+        if self._isDUTLoaded:
+            shape = self.rawImage.shape[:2]
+        else:
+            QMessageBox.warning(self, "warning", "Load DUT first")
+            return 
+
+        if filterType == 0:
+            try:
+                cutin = float(self.lineEditCutInFrequency.text())
+                if filterBW == 2:
+                    cutoff = float(self.lineEditCutOffFrequency.text())
+            except Exception as e:
+                print(e)
+            
+            filt = FilterService.get_butterworth_filter(shape=shape, 
+                                                        cutin=cutin, 
+                                                        cutoff=cutoff, 
+                                                        type=self._getBWFromIndex(filterBW))
+
+        if filterType == 1: # Gaussian
+            try:
+                sigmax = float(self.lineEditSigmaX.text())
+                sigmay = float(self.lineEditSigmaY.text())
+                if filterBW == 2:
+                    sigmax2 = float(self.lineEditSigmaX2.text())
+                    sigmay2 = float(self.lineEditSigmaY2.text())
+
+                filt = FilterService.get_gaussian_filter(shape=shape, 
+                                                        sigma_x=sigmax, 
+                                                        sigma_y=sigmay, 
+                                                        type=self._getBWFromIndex(filterBW),
+                                                        sigma_x2=sigmax2,
+                                                        sigma_y2=sigmay2)
+            except Exception as e:
+                print(e.__traceback__())
+
+        if filt is not None:
+            self.filter = filt
+            self._isFilterLoaded = True
+
 
 def run():
     app = QApplication(sys.argv)

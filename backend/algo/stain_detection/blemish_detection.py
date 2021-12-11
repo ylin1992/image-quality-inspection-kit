@@ -19,7 +19,9 @@ class BlemishDetection(StainDetection):
             raise ValueError("filter is None")
         if image is None:
             raise ValueError("Image is None")
-        
+        if len(image.shape) > 2:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
         self.__filter = _filter
         self.__image = image
         if ref_image is not None and roi_w is None and ratio is None:
@@ -27,6 +29,8 @@ class BlemishDetection(StainDetection):
         
 
         if ref_image is not None:
+            if len(ref_image.shape) > 2:
+                ref_image = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
             self.__ref_image = ref_image
             self.__dual_mode = True
             self.roi_w = roi_w
@@ -54,6 +58,8 @@ class BlemishDetection(StainDetection):
         # Set as dual image detection mode
         if ref_image is None:
             raise ValueError("ref_image is None")
+        if len(ref_image.shape) > 2:
+            ref_image = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
         self.__ref_image = ref_image
         self.__dual_mode = True
         self.ratio = ratio
@@ -110,6 +116,8 @@ class BlemishDetection(StainDetection):
     def set_image(self, image):
         if image is None:
             raise ValueError("Image is None")
+        if len(image.shape) > 2:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         self.__image = image
     
     def get_image(self):
