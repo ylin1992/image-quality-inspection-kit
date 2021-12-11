@@ -15,7 +15,9 @@ The tuner provides a visualized interface containing:
 - Real part of Fourier-Domain filter
 - Image after being applied the filter
 - A binarized result image by thresholding
+<br />
 ![demo_gui_filter_tuner](https://github.com/ylin1992/image-quality-inspection-kit/blob/main/screenshot/IQI_filter_tuner.png)
+<br />
 ***Load an image:*** Load an image (ends with jpg, png or bmp)
 ***Pick a filter type:***  Pick a filter type from the scroll-down menu. The toolbox provides below filter so far:
 - Butterworth filter
@@ -32,4 +34,4 @@ The tuner provides a visualized interface containing:
 
 ***Apply filter:*** After the filter is generated, click apply filter, an image in space domain will be generated in the third (bottom left) canvas. You canzoom in a specific ROI to do pixel-level peeking
 
-***Thresholding:*** After examining the filtered image, you might have a brief idea on how much threshold you should set to the filtered image so that you can seperate unwanted background noise and the real blemish signal. Specify a value and click **"Apply Threshold"** button at the bottom right corner
+***Thresholding:*** After examining the filtered image, you might have a brief idea on how much threshold you should set to the filtered image so that you can seperate unwanted background noise and the real blemish signal. Specify a value and click **"Apply Threshold"** button at the bottom right corner.
