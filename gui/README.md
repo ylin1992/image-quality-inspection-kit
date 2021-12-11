@@ -38,11 +38,9 @@ The tuner provides a visualized interface containing:
 <br />
 
 ## Detection tuner
-The detection tuner provides a work flow how an optical engineer or quality control engineer works on determining a suitable filter parameter used in AOI on a new product's production lines
-<br />
+The detection tuner provides a work flow how an optical engineer or quality control engineer works on determining a suitable filter parameter used in AOI on a new product's production lines.  
 ![demo_gui_dection_tuner](https://github.com/ylin1992/image-quality-inspection-kit/blob/main/screenshot/detection_tuner.png)
 
-<br />
 The app provides two modes for particle detection: Single mode and Dual mode.
 - Single mode: Single mode needs a single DUT(Device Under Tested) image, the image applies a filter specified on the UI, and finally will be binarized by a threshold.
 - Dual mode: Dual mode needs two images, one is the DUT image mentioned above, another is a reference image acting as a "standard" which helps sperarate unwanted noise and real blemish.
